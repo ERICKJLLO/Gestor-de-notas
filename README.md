@@ -27,7 +27,7 @@ las notas creadas por los otros usuarios.
 
 ## Diagrama de Clases
 
-![alt text](assets/DiagramaUML.drawio.png)
+![alt text](assets/DiagramaUML.png)
 
 ## Pruebas Implementadas
 

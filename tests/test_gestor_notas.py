@@ -1,11 +1,11 @@
-import pytest
+import unittest
 
 from src.model.errores_gestor_notas import *
 from src.model.gestor_notas import GestorNotas
 from src.model.nota import Nota
 from src.model.usuario import Usuario
 
-class TestCrearNota:
+class TestCrearNota(unittest.TestCase):
     def setUp(self):
         self.gestor = GestorNotas()
         self.gestor.registrar_usuario("usuario1", "password1")
@@ -24,6 +24,7 @@ class TestCrearNota:
         self.gestor.agregar_nota(self.usuario, "Tarea", "Matematicas", "General", [])
         self.assertTrue(any(n.titulo == "Tarea" for n in self.usuario.notas))
     
+    
     # Pruebas extremas
     def test_crear_nota_extremo_1(self):
         self.gestor.agregar_nota(self.usuario, "A" * 200, "B" * 500, "C" * 50, [])
@@ -36,6 +37,7 @@ class TestCrearNota:
     def test_crear_nota_extremo_3(self):
         self.gestor.agregar_nota(self.usuario, "Nota con caracteres especiales!@#$", "Contenido", "General", [])
         self.assertIn("Nota con caracteres especiales!@#$", [n.titulo for n in self.usuario.notas])
+    
     
     # Pruebas de error
     def test_crear_nota_error_1(self):
@@ -50,12 +52,15 @@ class TestCrearNota:
     def test_crear_nota_error_3(self):
         with self.assertRaises(CamposVaciosError):
             self.gestor.agregar_nota(None, "Titulo", "Contenido", "Trabajo", [])
-class TestEditarNota:
+            
+            
+class TestEditarNota(unittest.TestCase):
     def setUp(self):
         self.gestor = GestorNotas()
         self.gestor.registrar_usuario("usuario1", "password1")
         self.usuario = self.gestor.iniciar_sesion("usuario1", "password1")
         self.gestor.agregar_nota(self.usuario, "Titulo", "Contenido", "Trabajo", [])
+    
     
     # Pruebas normales
     def test_editar_nota_normal_1(self):
@@ -70,6 +75,7 @@ class TestEditarNota:
         self.gestor.editar_nota(self.usuario, 0, "Titulo", "Texto", "Importante")
         self.assertEqual(self.usuario.notas[0].categoria, "Importante")
     
+    
     # Pruebas extremas
     def test_editar_nota_extremo_1(self):
         self.gestor.editar_nota(self.usuario, 0, "A" * 200, "B" * 500, "C" * 50)
@@ -82,6 +88,7 @@ class TestEditarNota:
     def test_editar_nota_extremo_3(self):
         self.gestor.editar_nota(self.usuario, 0, "Nota!@#$", "Contenido especial", "General")
         self.assertIn("Nota!@#$", self.usuario.notas[0].titulo)
+    
     
     # Pruebas de error
     def test_editar_nota_error_1(self):
@@ -96,12 +103,14 @@ class TestEditarNota:
         with self.assertRaises(NotaNoEncontradaError):
             self.gestor.editar_nota(None, 0, "Nuevo", "Contenido", "Trabajo")
             
-class TestEliminarNota:
+            
+class TestEliminarNota(unittest.TestCase):
     def setUp(self):
         self.gestor = GestorNotas()
         self.gestor.registrar_usuario("usuario1", "password1")
         self.usuario = self.gestor.iniciar_sesion("usuario1", "password1")
         self.gestor.agregar_nota(self.usuario, "Titulo", "Contenido", "Trabajo", [])
+    
     
     # Pruebas normales
     def test_eliminar_nota_normal_1(self):
@@ -116,6 +125,7 @@ class TestEliminarNota:
     def test_eliminar_nota_normal_3(self):
         self.gestor.eliminar_nota(self.usuario, 0)
         self.assertEqual(len(self.usuario.notas), -1)
+    
     
     # Pruebas extremas
     def test_eliminar_nota_extremo_1(self):
@@ -134,6 +144,7 @@ class TestEliminarNota:
         with self.assertRaises(ValueError):
             self.gestor.eliminar_nota(self.usuario, None)
     
+    
     # Pruebas de error
     def test_eliminar_nota_error_1(self):
         with self.assertRaises(NotaNoEncontradaError):
@@ -149,10 +160,11 @@ class TestEliminarNota:
             self.gestor.eliminar_nota(otro_usuario, 0)
 
             
-class TestIniciarSesion:
+class TestIniciarSesion(unittest.TestCase):
     def setUp(self):
         self.gestor = GestorNotas()
         self.gestor.registrar_usuario("usuario1", "password1")
+    
     
     # Pruebas normales
     def test_iniciar_sesion_normal_1(self):
@@ -164,6 +176,7 @@ class TestIniciarSesion:
     
     def test_iniciar_sesion_normal_3(self):
         self.assertTrue(self.gestor.iniciar_sesion("usuario1", "password1"))
+    
     
     # Pruebas extremas
     def test_iniciar_sesion_extremo_1(self):
@@ -178,6 +191,7 @@ class TestIniciarSesion:
         self.gestor.registrar_usuario("", "password")
         self.assertTrue(self.gestor.iniciar_sesion("", "password"))
     
+    
         # Pruebas de error
     def test_iniciar_sesion_error_1(self):
         with self.assertRaises(CredencialesInvalidasError):
@@ -191,9 +205,11 @@ class TestIniciarSesion:
         with self.assertRaises(CamposVaciosError):
             self.gestor.iniciar_sesion("", "")
             
-class TestCrearCuenta:
+            
+class TestCrearCuenta(unittest.TestCase):
     def setUp(self):
         self.gestor = GestorNotas()
+    
     
     # Pruebas normales
     def test_registrar_usuario_normal_1(self):
@@ -208,6 +224,7 @@ class TestCrearCuenta:
         self.gestor.registrar_usuario("testuser", "1234")
         self.assertTrue(isinstance(self.gestor.usuarios["testuser"], Usuario))
     
+    
     # Pruebas extremas
     def test_registrar_usuario_extremo_1(self):
         self.gestor.registrar_usuario("a" * 100, "b" * 100)
@@ -220,6 +237,7 @@ class TestCrearCuenta:
     def test_registrar_usuario_extremo_3(self):
         self.gestor.registrar_usuario("user@#$", "pa$$word!")
         self.assertIn("user@#$", self.gestor.usuarios)
+    
     
         # Pruebas de error
     def test_registrar_usuario_error_1(self):
@@ -235,11 +253,13 @@ class TestCrearCuenta:
         with self.assertRaises(CamposVaciosError):
             self.gestor.registrar_usuario("user", None)
 
-class TestCambiarContrasena:
+
+class TestCambiarContrasena(unittest.TestCase):
     def setUp(self):
         self.gestor = GestorNotas()
         self.gestor.registrar_usuario("usuario1", "password1")
         self.usuario = self.gestor.iniciar_sesion("usuario1", "password1")
+    
     
     # Pruebas normales
     def test_cambiar_contrasena_normal_1(self):
@@ -254,6 +274,7 @@ class TestCambiarContrasena:
         self.gestor.cambiar_contraseña(self.usuario, "clave_456")
         self.assertEqual(self.usuario.contrasena, "clave_456")
     
+    
     # Pruebas extremas
     def test_cambiar_contrasena_extremo_1(self):
         self.gestor.cambiar_contraseña(self.usuario, "p" * 100)
@@ -266,6 +287,7 @@ class TestCambiarContrasena:
     def test_cambiar_contrasena_extremo_3(self):
         self.gestor.cambiar_contraseña(self.usuario, "Pa$$w0rd!@#")
         self.assertEqual(self.usuario.contrasena, "Pa$$w0rd!@#")
+    
     
     # Pruebas de error
     def test_cambiar_contrasena_error_1(self):

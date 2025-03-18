@@ -124,7 +124,7 @@ class TestEliminarNota(unittest.TestCase):
     
     def test_eliminar_nota_normal_3(self):
         self.gestor.eliminar_nota(self.usuario, 0)
-        self.assertEqual(len(self.usuario.notas), -1)
+        self.assertEqual(len(self.usuario.notas), 0)
     
     
     # Pruebas extremas
@@ -137,11 +137,11 @@ class TestEliminarNota(unittest.TestCase):
     
     def test_eliminar_nota_extremo_2(self):
         self.gestor.eliminar_nota(self.usuario, 0)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotaNoEncontradaError):
             self.gestor.eliminar_nota(self.usuario, 0)
     
     def test_eliminar_nota_extremo_3(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotaNoEncontradaError):
             self.gestor.eliminar_nota(self.usuario, None)
     
     

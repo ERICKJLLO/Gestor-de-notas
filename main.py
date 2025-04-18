@@ -12,8 +12,9 @@ def mostrar_menu_usuario():
     print("3. Eliminar nota")
     print("4. Cambiar contraseña")
     print("5. Cerrar sesión")
+    print("6. Ver notas")
 
-def main():
+def consola():
     gestor = GestorNotas()
     usuario_actual = None
 
@@ -93,8 +94,33 @@ def main():
             elif opcion == "5":
                 usuario_actual = None
                 print("Sesión cerrada.")
+            elif opcion == "6":
+                try:
+                    notas = gestor.ver_notas(usuario_actual)
+                    if isinstance(notas, list):
+                        print("Notas:")
+                        for i, nota in enumerate(notas):
+                            print(f"{i}. {nota}")
+                    else:
+                        print(notas)
+                except UsuarioNoEncontradoError as e:
+                    print(e)
             else:
                 print("Opción no válida.")
+
+def main():
+    print("Seleccione el modo de la aplicación:")
+    print("1. Interfaz gráfica")
+    print("2. Consola")
+    opcion = input("Seleccione una opción: ")
+
+    if opcion == "1":
+        from gui.interfaz import GestorNotasApp
+        GestorNotasApp().run()
+    elif opcion == "2":
+        consola()
+    else:
+        print("Opción no válida. Saliendo...")
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,21 @@
+<MenuScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: "Menú de Notas"
+            font_size: 24
+        Button:
+            text: "Ver Notas"
+            on_press: root.ver_notas()
+        Button:
+            text: "Editar Notas"
+            on_press: root.editar_notas()
+        Button:
+            text: "Eliminar Notas"
+            on_press: root.eliminar_notas()
+        Button:
+            text: "Crear Nota"  # Nuevo botón
+            on_press: root.crear_nota()
+        Button:
+            text: "Cerrar Sesión"
+            on_press: root.cerrar_sesion()

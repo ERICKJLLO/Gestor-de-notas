@@ -1,0 +1,24 @@
+<ConfigScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: "Pantalla de Configuración"
+        Button:
+            text: "Volver"
+            on_press: app.root.current = "main"
+
+<RegisterScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: "Registrar Usuario"
+        TextInput:
+            id: usuario
+            hint_text: "Nombre de Usuario"
+        TextInput:
+            id: contrasena
+            hint_text: "Contraseña"
+            password: True
+        Button:
+            text: "Continuar"
+            on_press: root.continuar()

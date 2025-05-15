@@ -107,20 +107,3 @@ def consola():
                     print(e)
             else:
                 print("Opción no válida.")
-
-def main():
-    print("Seleccione el modo de la aplicación:")
-    print("1. Interfaz gráfica")
-    print("2. Consola")
-    opcion = input("Seleccione una opción: ")
-
-    if opcion == "1":
-        from gui.interfaz import GestorNotasApp
-        GestorNotasApp().run()
-    elif opcion == "2":
-        consola()
-    else:
-        print("Opción no válida. Saliendo...")
-
-if __name__ == "__main__":
-    main()

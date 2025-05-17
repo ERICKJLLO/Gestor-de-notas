@@ -188,3 +188,26 @@ Pruebas de Error
 | 52 | Cambiar contraseña vacía                     | Contraseña: ""       | Lanza `ContrasenaInvalidaError`  |
 | 53 | Cambiar contraseña de un usuario inexistente | Usuario: "no_existe" | Lanza `UsuarioNoEncontradoError` |
 | 54 | Cambiar contraseña a `None`                  | Contraseña: None     | Lanza `ContrasenaInvalidaError`  |
+
+
+### TestEliminarUsuario
+
+| #  | Tipo     | Descripción                                        | Datos de entrada                | Resultado esperado               |
+|----|----------|----------------------------------------------------|---------------------------------|----------------------------------|
+| 55 | Normal   | Eliminar un usuario y sus notas                    | Usuario existente               | Usuario y notas eliminados       |
+| 56 | Error    | Eliminar usuario None                              | Usuario: None                   | Lanza `UsuarioNoEncontradoError` |
+| 57 | Error    | Eliminar usuario que ya no está en la base         | Usuario eliminado previamente   | Lanza `UsuarioNoEncontradoError` |
+
+### TestVerNotas
+
+| #  | Tipo     | Descripción                                        | Datos de entrada                | Resultado esperado                        |
+|----|----------|----------------------------------------------------|---------------------------------|-------------------------------------------|
+| 58 | Normal   | Ver lista de notas de un usuario                   | Usuario con 2 notas             | Lista de 2 notas                          |
+| 59 | Extrema  | Ver notas cuando el usuario no tiene ninguna nota  | Usuario sin notas               | "No hay notas disponibles."               |
+| 60 | Error    | Ver notas de usuario None                          | Usuario: None                   | Lanza `UsuarioNoEncontradoError`          |
+
+### TestNotasPorUsuario
+
+| #  | Tipo     | Descripción                                        | Datos de entrada                | Resultado esperado                        |
+|----|----------|----------------------------------------------------|---------------------------------|-------------------------------------------|
+| 61 | Normal   | Cada usuario solo puede ver sus propias notas      | Usuario1 y Usuario2 con notas   | Usuario1 ve solo sus notas, igual Usuario2|

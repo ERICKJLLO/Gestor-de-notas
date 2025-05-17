@@ -24,20 +24,29 @@ class Nota(Base):
     usuario = relationship("Usuario", back_populates="notas")
 
 # Configuración de la base de datos persistente
-engine = create_engine('sqlite:///gestor_notas.db', connect_args={"check_same_thread": False})
-Base.metadata.create_all(engine)
-Session = scoped_session(sessionmaker(bind=engine))
+def get_engine(db_url=None):
+    if db_url is None:
+        db_url = 'sqlite:///gestor_notas.db'
+    return create_engine(db_url, connect_args={"check_same_thread": False})
+
+def get_session(engine):
+    return scoped_session(sessionmaker(bind=engine))
 
 class GestorNotas:
     """
     Clase que gestiona las operaciones relacionadas con usuarios y notas.
     """
 
-    def __init__(self, session=None):
+    def __init__(self, session=None, db_url=None):
         """
         Inicializa el gestor de notas con un diccionario vacío de usuarios.
         """
-        self.session = session or Session()
+        if session:
+            self.session = session
+        else:
+            engine = get_engine(db_url)
+            Base.metadata.create_all(engine)
+            self.session = get_session(engine)
 
     def registrar_usuario(self, nombre_usuario, contraseña):
         """

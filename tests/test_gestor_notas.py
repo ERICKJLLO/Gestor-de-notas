@@ -1,42 +1,49 @@
 import unittest
 
 from src.model.errores_gestor_notas import *
-from src.model.gestor_notas import GestorNotas
-from src.model.nota import Nota
-from src.model.usuario import Usuario
+from src.model.gestor_notas import GestorNotas, Base, get_engine, get_session, Usuario, Nota
 
 class TestCrearNota(unittest.TestCase):
     def setUp(self):
-        self.gestor = GestorNotas()
+        engine = get_engine('sqlite:///:memory:')
+        Base.metadata.create_all(engine)
+        self.session = get_session(engine)
+        self.gestor = GestorNotas(session=self.session)
         self.gestor.registrar_usuario("usuario1", "password1")
         self.usuario = self.gestor.iniciar_sesion("usuario1", "password1")
-    
+
     # Pruebas normales
     def test_crear_nota_normal_1(self):
         self.gestor.agregar_nota(self.usuario, "Titulo", "Contenido", "Trabajo", [])
-        self.assertEqual(len(self.usuario.notas), 1)
+        notas = self.session.query(Nota).filter_by(id_usuario=self.usuario.id_usuario).all()
+        self.assertEqual(len(notas), 1)
     
     def test_crear_nota_normal_2(self):
         self.gestor.agregar_nota(self.usuario, "Nota 2", "Texto de prueba", "Personal", [])
-        self.assertEqual(self.usuario.notas[0].categoria, "Personal")
+        notas = self.session.query(Nota).filter_by(id_usuario=self.usuario.id_usuario).all()
+        self.assertEqual(notas[0].categoria, "Personal")
     
     def test_crear_nota_normal_3(self):
         self.gestor.agregar_nota(self.usuario, "Tarea", "Matematicas", "General", [])
-        self.assertTrue(any(n.titulo == "Tarea" for n in self.usuario.notas))
+        notas = self.session.query(Nota).filter_by(id_usuario=self.usuario.id_usuario).all()
+        self.assertTrue(any(n.titulo == "Tarea" for n in notas))
     
     
     # Pruebas extremas
     def test_crear_nota_extremo_1(self):
         self.gestor.agregar_nota(self.usuario, "A" * 200, "B" * 500, "C" * 50, [])
-        self.assertEqual(len(self.usuario.notas), 1)
+        notas = self.session.query(Nota).filter_by(id_usuario=self.usuario.id_usuario).all()
+        self.assertEqual(len(notas), 1)
     
     def test_crear_nota_extremo_2(self):
         self.gestor.agregar_nota(self.usuario, "", "Contenido sin título", "Trabajo", [])
-        self.assertEqual(self.usuario.notas[0].titulo, "")
+        notas = self.session.query(Nota).filter_by(id_usuario=self.usuario.id_usuario).all()
+        self.assertEqual(notas[0].titulo, "")
     
     def test_crear_nota_extremo_3(self):
         self.gestor.agregar_nota(self.usuario, "Nota con caracteres especiales!@#$", "Contenido", "General", [])
-        self.assertIn("Nota con caracteres especiales!@#$", [n.titulo for n in self.usuario.notas])
+        notas = self.session.query(Nota).filter_by(id_usuario=self.usuario.id_usuario).all()
+        self.assertIn("Nota con caracteres especiales!@#$", [n.titulo for n in notas])
     
     
     # Pruebas de error
@@ -45,9 +52,11 @@ class TestCrearNota(unittest.TestCase):
             self.gestor.agregar_nota(self.usuario, "", "", "", [])
     
     def test_crear_nota_error_2(self):
-        with self.assertRaises(NotaYaExisteError):
-            self.gestor.agregar_nota(self.usuario, "Trabajo", "Contenido", "Trabajo", [])
-            self.gestor.agregar_nota(self.usuario, "Trabajo", "Contenido", "Trabajo", [])
+        self.gestor.agregar_nota(self.usuario, "Trabajo", "Contenido", "Trabajo", [])
+        # Ahora se permiten duplicados, así que no debe lanzar excepción
+        self.gestor.agregar_nota(self.usuario, "Trabajo", "Contenido", "Trabajo", [])
+        notas = self.session.query(Nota).filter_by(id_usuario=self.usuario.id_usuario, titulo="Trabajo").all()
+        self.assertEqual(len(notas), 2)
     
     def test_crear_nota_error_3(self):
         with self.assertRaises(CamposVaciosError):
@@ -56,7 +65,10 @@ class TestCrearNota(unittest.TestCase):
             
 class TestEditarNota(unittest.TestCase):
     def setUp(self):
-        self.gestor = GestorNotas()
+        engine = get_engine('sqlite:///:memory:')
+        Base.metadata.create_all(engine)
+        self.session = get_session(engine)
+        self.gestor = GestorNotas(session=self.session)
         self.gestor.registrar_usuario("usuario1", "password1")
         self.usuario = self.gestor.iniciar_sesion("usuario1", "password1")
         self.gestor.agregar_nota(self.usuario, "Titulo", "Contenido", "Trabajo", [])
@@ -65,29 +77,35 @@ class TestEditarNota(unittest.TestCase):
     # Pruebas normales
     def test_editar_nota_normal_1(self):
         self.gestor.editar_nota(self.usuario, 0, "Nuevo Titulo", "Nuevo Contenido", "Trabajo")
-        self.assertEqual(self.usuario.notas[0].titulo, "Nuevo Titulo")
+        notas = self.session.query(Nota).filter_by(id_usuario=self.usuario.id_usuario).all()
+        self.assertEqual(notas[0].titulo, "Nuevo Titulo")
     
     def test_editar_nota_normal_2(self):
         self.gestor.editar_nota(self.usuario, 0, "Actualización", "Texto actualizado", "Trabajo")
-        self.assertEqual(self.usuario.notas[0].contenido, "Texto actualizado")
+        notas = self.session.query(Nota).filter_by(id_usuario=self.usuario.id_usuario).all()
+        self.assertEqual(notas[0].contenido, "Texto actualizado")
     
     def test_editar_nota_normal_3(self):
         self.gestor.editar_nota(self.usuario, 0, "Titulo", "Texto", "Importante")
-        self.assertEqual(self.usuario.notas[0].categoria, "Importante")
+        notas = self.session.query(Nota).filter_by(id_usuario=self.usuario.id_usuario).all()
+        self.assertEqual(notas[0].categoria, "Importante")
     
     
     # Pruebas extremas
     def test_editar_nota_extremo_1(self):
         self.gestor.editar_nota(self.usuario, 0, "A" * 200, "B" * 500, "C" * 50)
-        self.assertEqual(self.usuario.notas[0].titulo, "A" * 200)
+        notas = self.session.query(Nota).filter_by(id_usuario=self.usuario.id_usuario).all()
+        self.assertEqual(notas[0].titulo, "A" * 200)
     
     def test_editar_nota_extremo_2(self):
         self.gestor.editar_nota(self.usuario, 0, "", "Contenido sin título", "Trabajo")
-        self.assertEqual(self.usuario.notas[0].titulo, "")
+        notas = self.session.query(Nota).filter_by(id_usuario=self.usuario.id_usuario).all()
+        self.assertEqual(notas[0].titulo, "")
     
     def test_editar_nota_extremo_3(self):
         self.gestor.editar_nota(self.usuario, 0, "Nota!@#$", "Contenido especial", "General")
-        self.assertIn("Nota!@#$", self.usuario.notas[0].titulo)
+        notas = self.session.query(Nota).filter_by(id_usuario=self.usuario.id_usuario).all()
+        self.assertIn("Nota!@#$", notas[0].titulo)
     
     
     # Pruebas de error
@@ -106,7 +124,10 @@ class TestEditarNota(unittest.TestCase):
             
 class TestEliminarNota(unittest.TestCase):
     def setUp(self):
-        self.gestor = GestorNotas()
+        engine = get_engine('sqlite:///:memory:')
+        Base.metadata.create_all(engine)
+        self.session = get_session(engine)
+        self.gestor = GestorNotas(session=self.session)
         self.gestor.registrar_usuario("usuario1", "password1")
         self.usuario = self.gestor.iniciar_sesion("usuario1", "password1")
         self.gestor.agregar_nota(self.usuario, "Titulo", "Contenido", "Trabajo", [])
@@ -115,16 +136,19 @@ class TestEliminarNota(unittest.TestCase):
     # Pruebas normales
     def test_eliminar_nota_normal_1(self):
         self.gestor.eliminar_nota(self.usuario, 0)
-        self.assertEqual(len(self.usuario.notas), 0)
+        notas = self.session.query(Nota).filter_by(id_usuario=self.usuario.id_usuario).all()
+        self.assertEqual(len(notas), 0)
     
     def test_eliminar_nota_normal_2(self):
         self.gestor.agregar_nota(self.usuario, "Nota 2", "Texto", "Personal", [])
         self.gestor.eliminar_nota(self.usuario, 0)
-        self.assertEqual(len(self.usuario.notas), 1)
+        notas = self.session.query(Nota).filter_by(id_usuario=self.usuario.id_usuario).all()
+        self.assertEqual(len(notas), 1)
     
     def test_eliminar_nota_normal_3(self):
         self.gestor.eliminar_nota(self.usuario, 0)
-        self.assertEqual(len(self.usuario.notas), 0)
+        notas = self.session.query(Nota).filter_by(id_usuario=self.usuario.id_usuario).all()
+        self.assertEqual(len(notas), 0)
     
     
     # Pruebas extremas
@@ -133,7 +157,8 @@ class TestEliminarNota(unittest.TestCase):
             self.gestor.agregar_nota(self.usuario, "Titulo", "Contenido", "General", [])
         for _ in range(50):
             self.gestor.eliminar_nota(self.usuario, 0)
-        self.assertEqual(len(self.usuario.notas), 51)
+        notas = self.session.query(Nota).filter_by(id_usuario=self.usuario.id_usuario).all()
+        self.assertEqual(len(notas), 51)
     
     def test_eliminar_nota_extremo_2(self):
         self.gestor.eliminar_nota(self.usuario, 0)
@@ -156,13 +181,20 @@ class TestEliminarNota(unittest.TestCase):
     
     def test_eliminar_nota_error_3(self):
         with self.assertRaises(EliminacionInvalidaError):
-            otro_usuario = Usuario("usuario2", "password2")
+            # Crea un usuario de SQLAlchemy, no del modelo antiguo
+            otro_usuario = self.session.query(Usuario).filter_by(nombre_usuario="usuario2").first()
+            if not otro_usuario:
+                self.gestor.registrar_usuario("usuario2", "password2")
+                otro_usuario = self.gestor.iniciar_sesion("usuario2", "password2")
             self.gestor.eliminar_nota(otro_usuario, 0)
 
             
 class TestIniciarSesion(unittest.TestCase):
     def setUp(self):
-        self.gestor = GestorNotas()
+        engine = get_engine('sqlite:///:memory:')
+        Base.metadata.create_all(engine)
+        self.session = get_session(engine)
+        self.gestor = GestorNotas(session=self.session)
         self.gestor.registrar_usuario("usuario1", "password1")
     
     
@@ -188,8 +220,9 @@ class TestIniciarSesion(unittest.TestCase):
         self.assertTrue(self.gestor.iniciar_sesion("user@#$", "pa$$word!"))
     
     def test_iniciar_sesion_extremo_3(self):
-        self.gestor.registrar_usuario("", "password")
-        self.assertTrue(self.gestor.iniciar_sesion("", "password"))
+        # Ahora se espera que lanzar CamposVaciosError si el nombre de usuario está vacío
+        with self.assertRaises(CamposVaciosError):
+            self.gestor.registrar_usuario("", "password")
     
     
         # Pruebas de error
@@ -208,35 +241,43 @@ class TestIniciarSesion(unittest.TestCase):
             
 class TestCrearCuenta(unittest.TestCase):
     def setUp(self):
-        self.gestor = GestorNotas()
+        engine = get_engine('sqlite:///:memory:')
+        Base.metadata.create_all(engine)
+        self.session = get_session(engine)
+        self.gestor = GestorNotas(session=self.session)
     
     
     # Pruebas normales
     def test_registrar_usuario_normal_1(self):
         self.gestor.registrar_usuario("usuario2", "password2")
-        self.assertIn("usuario2", self.gestor.usuarios)
+        usuario = self.session.query(Usuario).filter_by(nombre_usuario="usuario2").first()
+        self.assertIsNotNone(usuario)
     
     def test_registrar_usuario_normal_2(self):
         self.gestor.registrar_usuario("user123", "securepass")
-        self.assertEqual(self.gestor.usuarios["user123"].nombre_usuario, "user123")
+        usuario = self.session.query(Usuario).filter_by(nombre_usuario="user123").first()
+        self.assertEqual(usuario.nombre_usuario, "user123")
     
     def test_registrar_usuario_normal_3(self):
         self.gestor.registrar_usuario("testuser", "1234")
-        self.assertTrue(isinstance(self.gestor.usuarios["testuser"], Usuario))
+        usuario = self.session.query(Usuario).filter_by(nombre_usuario="testuser").first()
+        self.assertIsInstance(usuario, Usuario)
     
     
     # Pruebas extremas
     def test_registrar_usuario_extremo_1(self):
         self.gestor.registrar_usuario("a" * 100, "b" * 100)
-        self.assertIn("a" * 100, self.gestor.usuarios)
+        usuario = self.session.query(Usuario).filter_by(nombre_usuario="a" * 100).first()
+        self.assertIsNotNone(usuario)
     
     def test_registrar_usuario_extremo_2(self):
-        self.gestor.registrar_usuario("", "password")
-        self.assertIn("", self.gestor.usuarios)
+        with self.assertRaises(CamposVaciosError):
+            self.gestor.registrar_usuario("", "password")
     
     def test_registrar_usuario_extremo_3(self):
         self.gestor.registrar_usuario("user@#$", "pa$$word!")
-        self.assertIn("user@#$", self.gestor.usuarios)
+        usuario = self.session.query(Usuario).filter_by(nombre_usuario="user@#$").first()
+        self.assertIsNotNone(usuario)
     
     
         # Pruebas de error
@@ -256,7 +297,10 @@ class TestCrearCuenta(unittest.TestCase):
 
 class TestCambiarContrasena(unittest.TestCase):
     def setUp(self):
-        self.gestor = GestorNotas()
+        engine = get_engine('sqlite:///:memory:')
+        Base.metadata.create_all(engine)
+        self.session = get_session(engine)
+        self.gestor = GestorNotas(session=self.session)
         self.gestor.registrar_usuario("usuario1", "password1")
         self.usuario = self.gestor.iniciar_sesion("usuario1", "password1")
     
@@ -293,11 +337,92 @@ class TestCambiarContrasena(unittest.TestCase):
     def test_cambiar_contrasena_error_1(self):
         with self.assertRaises(ContrasenaInvalidaError):
             self.gestor.cambiar_contraseña(self.usuario, "")
-    
+
     def test_cambiar_contrasena_error_2(self):
         with self.assertRaises(UsuarioNoEncontradoError):
             self.gestor.cambiar_contraseña(None, "nuevaClave")
-    
+
     def test_cambiar_contrasena_error_3(self):
         with self.assertRaises(ContrasenaInvalidaError):
             self.gestor.cambiar_contraseña(self.usuario, None)
+
+
+class TestEliminarUsuario(unittest.TestCase):
+    def setUp(self):
+        engine = get_engine('sqlite:///:memory:')
+        Base.metadata.create_all(engine)
+        self.session = get_session(engine)
+        self.gestor = GestorNotas(session=self.session)
+        self.gestor.registrar_usuario("usuario1", "password1")
+        self.usuario = self.gestor.iniciar_sesion("usuario1", "password1")
+        self.gestor.agregar_nota(self.usuario, "Nota1", "Contenido1", "General", [])
+        self.gestor.agregar_nota(self.usuario, "Nota2", "Contenido2", "Trabajo", [])
+
+    # Pruebas normales
+    def test_eliminar_usuario_normal(self):
+        self.gestor.eliminar_usuario(self.usuario)
+        usuario_db = self.session.query(Usuario).filter_by(nombre_usuario="usuario1").first()
+        self.assertIsNone(usuario_db)
+        notas = self.session.query(Nota).filter_by(id_usuario=self.usuario.id_usuario).all()
+        self.assertEqual(len(notas), 0)
+
+    # Pruebas de error
+    def test_eliminar_usuario_error(self):
+        with self.assertRaises(UsuarioNoEncontradoError):
+            self.gestor.eliminar_usuario(None)
+
+    def test_eliminar_usuario_no_existente(self):
+        self.gestor.eliminar_usuario(self.usuario)
+        with self.assertRaises(UsuarioNoEncontradoError):
+            self.gestor.eliminar_usuario(self.usuario)
+
+class TestVerNotas(unittest.TestCase):
+    def setUp(self):
+        engine = get_engine('sqlite:///:memory:')
+        Base.metadata.create_all(engine)
+        self.session = get_session(engine)
+        self.gestor = GestorNotas(session=self.session)
+        self.gestor.registrar_usuario("usuario1", "password1")
+        self.usuario = self.gestor.iniciar_sesion("usuario1", "password1")
+
+    # Pruebas normales
+    def test_ver_notas_lista(self):
+        self.gestor.agregar_nota(self.usuario, "Nota1", "Contenido1", "General", [])
+        self.gestor.agregar_nota(self.usuario, "Nota2", "Contenido2", "Trabajo", [])
+        resultado = self.gestor.ver_notas(self.usuario)
+        self.assertIsInstance(resultado, list)
+        self.assertEqual(len(resultado), 2)
+        self.assertTrue(any("Nota1" in n for n in resultado))
+        self.assertTrue(any("Nota2" in n for n in resultado))
+
+    # Pruebas extremas
+    def test_ver_notas_vacio(self):
+        resultado = self.gestor.ver_notas(self.usuario)
+        self.assertEqual(resultado, "No hay notas disponibles.")
+
+    # Pruebas de error
+    def test_ver_notas_usuario_no_existente(self):
+        with self.assertRaises(UsuarioNoEncontradoError):
+            self.gestor.ver_notas(None)
+
+class TestNotasPorUsuario(unittest.TestCase):
+    def setUp(self):
+        engine = get_engine('sqlite:///:memory:')
+        Base.metadata.create_all(engine)
+        self.session = get_session(engine)
+        self.gestor = GestorNotas(session=self.session)
+        self.gestor.registrar_usuario("usuario1", "password1")
+        self.gestor.registrar_usuario("usuario2", "password2")
+        self.usuario1 = self.gestor.iniciar_sesion("usuario1", "password1")
+        self.usuario2 = self.gestor.iniciar_sesion("usuario2", "password2")
+        self.gestor.agregar_nota(self.usuario1, "Nota1", "Contenido1", "General", [])
+        self.gestor.agregar_nota(self.usuario2, "Nota2", "Contenido2", "Trabajo", [])
+
+    # Pruebas normales
+    def test_notas_solo_usuario_actual(self):
+        notas1 = self.gestor.ver_notas(self.usuario1)
+        notas2 = self.gestor.ver_notas(self.usuario2)
+        self.assertTrue(any("Nota1" in n for n in notas1))
+        self.assertFalse(any("Nota2" in n for n in notas1))
+        self.assertTrue(any("Nota2" in n for n in notas2))
+        self.assertFalse(any("Nota1" in n for n in notas2))

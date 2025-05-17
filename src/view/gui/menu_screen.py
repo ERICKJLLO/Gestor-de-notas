@@ -26,17 +26,15 @@ class MenuScreen(Screen):
             contenido = BoxLayout(orientation='vertical')
 
             if isinstance(notas, list):
+                from kivy.uix.scrollview import ScrollView
+                from kivy.uix.gridlayout import GridLayout
                 scrollview = ScrollView(size_hint=(1, 0.8))
                 grid = GridLayout(cols=1, size_hint_y=None, spacing=10, padding=10)
                 grid.bind(minimum_height=grid.setter('height'))
 
                 for nota in notas:
-                    nota_box = BoxLayout(orientation='vertical', padding=10, spacing=5, size_hint_y=None, height=150)
-                    nota_box.add_widget(Label(text=f"Título: {nota.titulo}", bold=True, font_size=16, size_hint_y=None, height=30))
-                    nota_box.add_widget(Label(text=f"Contenido: {nota.contenido}", size_hint_y=None, height=50))
-                    nota_box.add_widget(Label(text=f"Categoría: {nota.categoria}", italic=True, size_hint_y=None, height=20))
-                    nota_box.add_widget(Label(text=f"Fecha: {nota.fecha_creacion.strftime('%Y-%m-%d %H:%M:%S')}", size_hint_y=None, height=20))
-                    grid.add_widget(nota_box)
+                    # nota es un string, no un objeto Nota
+                    grid.add_widget(Label(text=nota, size_hint_y=None, height=60))
 
                 scrollview.add_widget(grid)
                 contenido.add_widget(scrollview)
@@ -51,6 +49,8 @@ class MenuScreen(Screen):
             self.popup.open()
         except UsuarioNoEncontradoError as e:
             self.mostrar_error(str(e))
+        except Exception as e:
+            self.mostrar_error(f"Error inesperado: {str(e)}")
 
     def editar_notas(self):
         """
@@ -200,4 +200,37 @@ class MenuScreen(Screen):
         """
         # Mostrar un popup con el mensaje de error
         popup = Popup(title="Error", content=Label(text=mensaje), size_hint=(0.8, 0.4))
+        popup.open()
+
+    def eliminar_cuenta(self):
+        """
+        Elimina la cuenta del usuario actual tras confirmación.
+        """
+        contenido = BoxLayout(orientation='vertical')
+        contenido.add_widget(Label(text="¿Estás seguro de que deseas eliminar tu cuenta?\nEsta acción no se puede deshacer."))
+
+        btn_confirmar = Button(text="Eliminar cuenta", background_color=(1, 0, 0, 1))
+        btn_cancelar = Button(text="Cancelar")
+
+        botones = BoxLayout(size_hint_y=None, height=40)
+        botones.add_widget(btn_confirmar)
+        botones.add_widget(btn_cancelar)
+        contenido.add_widget(botones)
+
+        popup = Popup(title="Confirmar eliminación", content=contenido, size_hint=(0.8, 0.4))
+
+        def confirmar(instance):
+            app = App.get_running_app()
+            try:
+                app.gestor.eliminar_usuario(app.usuario_actual)
+                app.usuario_actual = None
+                popup.dismiss()
+                self.manager.current = "main"
+                self.mostrar_error("Cuenta eliminada correctamente.")
+            except Exception as e:
+                popup.dismiss()
+                self.mostrar_error(str(e))
+
+        btn_confirmar.bind(on_press=confirmar)
+        btn_cancelar.bind(on_press=lambda x: popup.dismiss())
         popup.open()

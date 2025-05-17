@@ -17,6 +17,9 @@ class LoginScreen(Screen):
     Permite al usuario ingresar un nombre de usuario y contraseña para iniciar sesión.
     """
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def continuar(self):
         """
         Maneja la acción de continuar después de ingresar los datos de inicio de sesión.
@@ -29,7 +32,7 @@ class LoginScreen(Screen):
             if not usuario or not contrasena:
                 raise CamposVaciosError("El nombre de usuario y la contraseña no pueden estar vacíos.")
             usuario_actual = gestor.iniciar_sesion(usuario, contrasena)
-            App.get_running_app().usuario_actual = usuario_actual
+            App.get_running_app().usuario_actual = usuario_actual  
             print(f"Inicio de sesión: {usuario}")
             self.manager.current = "menu"
         except CamposVaciosError as e:

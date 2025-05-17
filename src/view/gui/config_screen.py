@@ -29,6 +29,8 @@ class RegisterScreen(Screen):
             if not usuario or not contrasena:
                 raise CamposVaciosError("El nombre de usuario y la contraseña no pueden estar vacíos.")
             gestor.registrar_usuario(usuario, contrasena)
+            # Actualizar usuario_actual después de registrar
+            App.get_running_app().usuario_actual = gestor.iniciar_sesion(usuario, contrasena)
             print(f"Usuario registrado: {usuario}")
             self.manager.current = "menu"
         except CamposVaciosError as e:

@@ -1,18 +1,43 @@
 from datetime import datetime
-from src.model.usuario import Usuario
-from src.model.nota import Nota
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy.orm import declarative_base, sessionmaker, relationship, scoped_session
 from src.model.errores_gestor_notas import *
+
+Base = declarative_base()
+
+class Usuario(Base):
+    __tablename__ = 'usuario'
+    id_usuario = Column(Integer, primary_key=True, autoincrement=True)
+    nombre_usuario = Column(String, nullable=False, unique=True)
+    contrasena = Column(String, nullable=False)
+    notas = relationship("Nota", back_populates="usuario", cascade="all, delete-orphan")
+
+class Nota(Base):
+    __tablename__ = 'nota'
+    id_nota = Column(Integer, primary_key=True, autoincrement=True)
+    titulo = Column(String)
+    contenido = Column(Text, nullable=False)
+    fecha_creacion = Column(DateTime, nullable=False)
+    categoria = Column(String, nullable=False)
+    enlaces = Column(Text)
+    id_usuario = Column(Integer, ForeignKey('usuario.id_usuario'), nullable=False)
+    usuario = relationship("Usuario", back_populates="notas")
+
+# Configuración de la base de datos persistente
+engine = create_engine('sqlite:///gestor_notas.db', connect_args={"check_same_thread": False})
+Base.metadata.create_all(engine)
+Session = scoped_session(sessionmaker(bind=engine))
 
 class GestorNotas:
     """
     Clase que gestiona las operaciones relacionadas con usuarios y notas.
     """
 
-    def __init__(self):
+    def __init__(self, session=None):
         """
         Inicializa el gestor de notas con un diccionario vacío de usuarios.
         """
-        self.usuarios = {}
+        self.session = session or Session()
 
     def registrar_usuario(self, nombre_usuario, contraseña):
         """
@@ -25,9 +50,13 @@ class GestorNotas:
         """
         if contraseña is None or contraseña == "":
             raise CamposVaciosError("El nombre de usuario y la contraseña no pueden estar vacíos.")
-        if nombre_usuario in self.usuarios:
+        if not nombre_usuario:
+            raise CamposVaciosError("El nombre de usuario y la contraseña no pueden estar vacíos.")
+        if self.session.query(Usuario).filter_by(nombre_usuario=nombre_usuario).first():
             raise UsuarioYaExisteError("El usuario ya existe.")
-        self.usuarios[nombre_usuario] = Usuario(nombre_usuario, contraseña)
+        usuario = Usuario(nombre_usuario=nombre_usuario, contrasena=contraseña)
+        self.session.add(usuario)
+        self.session.commit()
 
     def iniciar_sesion(self, nombre_usuario, contraseña):
         """
@@ -42,7 +71,7 @@ class GestorNotas:
         """
         if contraseña is None or contraseña == "":
             raise CamposVaciosError("El nombre de usuario y la contraseña no pueden estar vacíos.")
-        usuario = self.usuarios.get(nombre_usuario)
+        usuario = self.session.query(Usuario).filter_by(nombre_usuario=nombre_usuario).first()
         if not usuario:
             raise UsuarioNoEncontradoError("Usuario no encontrado.")
         if usuario.contrasena != contraseña:
@@ -61,13 +90,18 @@ class GestorNotas:
         :raises CamposVaciosError: Si algún campo está vacío.
         :raises NotaYaExisteError: Si ya existe una nota con el mismo título.
         """
-        if not usuario or not titulo or not contenido or not categoria:
+        if not usuario or not contenido or not categoria:
             raise CamposVaciosError("El usuario, título, contenido y categoría no pueden estar vacíos.")
-        for nota in usuario.notas:
-            if nota.titulo == titulo:
-                raise NotaYaExisteError("Ya existe una nota con ese título.")
-        nueva_nota = Nota(titulo, contenido, datetime.now(), categoria, enlaces)
-        usuario.notas.append(nueva_nota)
+        nueva_nota = Nota(
+            titulo=titulo,
+            contenido=contenido,
+            fecha_creacion=datetime.now(),
+            categoria=categoria,
+            enlaces=",".join(enlaces) if enlaces else "",
+            usuario=usuario
+        )
+        self.session.add(nueva_nota)
+        self.session.commit()
 
     def editar_nota(self, usuario, indice, nuevo_titulo, nuevo_contenido, nueva_categoria):
         """
@@ -81,14 +115,18 @@ class GestorNotas:
         :raises NotaNoEncontradaError: Si la nota no existe.
         :raises EdicionInvalidaError: Si los nuevos datos son inválidos.
         """
-        if not usuario or indice < 0 or indice >= len(usuario.notas):
+        if not usuario:
             raise NotaNoEncontradaError("Nota no encontrada.")
+        notas = self.session.query(Nota).filter_by(id_usuario=usuario.id_usuario).all()
+        if indice < 0 or indice >= len(notas):
+            raise NotaNoEncontradaError("Nota no encontrada.")
+        nota = notas[indice]
         if nuevo_titulo is None or nuevo_contenido is None or nueva_categoria is None:
             raise EdicionInvalidaError("Los nuevos datos no pueden ser nulos.")
-        nota = usuario.notas[indice]
         nota.titulo = nuevo_titulo
         nota.contenido = nuevo_contenido
         nota.categoria = nueva_categoria
+        self.session.commit()
 
     def eliminar_nota(self, usuario, indice):
         """
@@ -101,9 +139,11 @@ class GestorNotas:
         """
         if not usuario:
             raise EliminacionInvalidaError("Usuario no encontrado.")
-        if indice is None or indice < 0 or indice >= len(usuario.notas):
+        notas = self.session.query(Nota).filter_by(id_usuario=usuario.id_usuario).all()
+        if indice is None or indice < 0 or indice >= len(notas):
             raise NotaNoEncontradaError("Nota no encontrada.")
-        usuario.notas.pop(indice)  # Eliminar la nota del índice especificado
+        self.session.delete(notas[indice])
+        self.session.commit()
 
     def cambiar_contraseña(self, usuario, nueva_contraseña):
         """
@@ -119,6 +159,7 @@ class GestorNotas:
         if not nueva_contraseña:
             raise ContrasenaInvalidaError("La nueva contraseña no puede estar vacía.")
         usuario.contrasena = nueva_contraseña
+        self.session.commit()
 
     def ver_notas(self, usuario):
         """
@@ -130,6 +171,22 @@ class GestorNotas:
         """
         if not usuario:
             raise UsuarioNoEncontradoError("Usuario no encontrado.")
-        if not usuario.notas:
+        notas = self.session.query(Nota).filter_by(id_usuario=usuario.id_usuario).all()
+        if not notas:
             return "No hay notas disponibles."
-        return [str(nota) for nota in usuario.notas]
+        return [f"Título: {n.titulo}\nContenido: {n.contenido}\nCategoría: {n.categoria}\nFecha: {n.fecha_creacion}\nEnlaces: {n.enlaces}" for n in notas]
+
+    def eliminar_usuario(self, usuario):
+        """
+        Elimina un usuario y todas sus notas asociadas de la base de datos.
+
+        :param usuario: El objeto Usuario a eliminar.
+        :raises UsuarioNoEncontradoError: Si el usuario no existe.
+        """
+        if not usuario:
+            raise UsuarioNoEncontradoError("Usuario no encontrado.")
+        usuario_db = self.session.query(Usuario).filter_by(id_usuario=usuario.id_usuario).first()
+        if not usuario_db:
+            raise UsuarioNoEncontradoError("Usuario no encontrado.")
+        self.session.delete(usuario_db)
+        self.session.commit()

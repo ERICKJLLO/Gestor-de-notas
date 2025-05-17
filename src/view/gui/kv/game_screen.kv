@@ -10,6 +10,20 @@
 <LoginScreen>:
     BoxLayout:
         orientation: 'vertical'
+        spacing: 10
+        padding: 40
+        RelativeLayout:
+            size_hint_y: None
+            height: 40
+            Button:
+                text: "<"
+                size_hint: None, None
+                size: 36, 36
+                pos: 0, 0
+                background_color: 0.25, 0.32, 0.39, 1
+                color: 1, 1, 1, 1
+                font_size: 18
+                on_press: app.root.current = "main"
         Label:
             text: "Iniciar Sesión"
         TextInput:

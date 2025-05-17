@@ -1,10 +1,10 @@
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager
 from kivy.lang import Builder
-from view.gui.main_screen import MainScreen
-from view.gui.config_screen import RegisterScreen
-from view.gui.game_screen import LoginScreen
-from view.gui.menu_screen import MenuScreen
+from src.view.gui.main_screen import MainScreen
+from src.view.gui.config_screen import RegisterScreen
+from src.view.gui.game_screen import LoginScreen
+from src.view.gui.menu_screen import MenuScreen
 from src.model.gestor_notas import GestorNotas
 
 class GestorNotasApp(App):
@@ -24,11 +24,11 @@ class GestorNotasApp(App):
         """
         Construye la aplicación cargando los archivos .kv y configurando el ScreenManager.
         """
-        # Cargar manualmente los archivos .kv
-        Builder.load_file("gui/kv/main_screen.kv")
-        Builder.load_file("gui/kv/config_screen.kv")
-        Builder.load_file("gui/kv/game_screen.kv")
-        Builder.load_file("gui/kv/menu_screen.kv")
+        # Cambia las rutas a la ubicación real de los archivos .kv
+        Builder.load_file("src/view/gui/kv/main_screen.kv")
+        Builder.load_file("src/view/gui/kv/config_screen.kv")
+        Builder.load_file("src/view/gui/kv/game_screen.kv")
+        Builder.load_file("src/view/gui/kv/menu_screen.kv")
 
         # Configurar el ScreenManager
         sm = ScreenManager()

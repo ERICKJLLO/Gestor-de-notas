@@ -1,21 +1,78 @@
 <MenuScreen>:
     BoxLayout:
         orientation: 'vertical'
+        spacing: 10
+        padding: 40
+        canvas.before:
+            Color:
+                rgba: 0.18, 0.22, 0.28, 1  # Fondo gris azulado sobrio
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        RelativeLayout:
+            size_hint_y: None
+            height: 40
+            Button:
+                text: "<"
+                size_hint: None, None
+                size: 36, 36
+                pos: 0, 0
+                background_color: 0.25, 0.32, 0.39, 1
+                color: 1, 1, 1, 1
+                font_size: 18
+                on_press: root.cerrar_sesion()
         Label:
             text: "Menú de Notas"
-            font_size: 24
+            font_size: 28
+            color: 1, 1, 1, 1
+            bold: True
+            size_hint_y: None
+            height: 54
         Button:
             text: "Ver Notas"
+            background_color: 0.25, 0.32, 0.39, 1
+            color: 1, 1, 1, 1
+            font_size: 16
+            size_hint_y: None
+            height: 44
             on_press: root.ver_notas()
         Button:
             text: "Editar Notas"
+            background_color: 0.25, 0.32, 0.39, 1
+            color: 1, 1, 1, 1
+            font_size: 16
+            size_hint_y: None
+            height: 44
             on_press: root.editar_notas()
         Button:
             text: "Eliminar Notas"
+            background_color: 0.25, 0.32, 0.39, 1
+            color: 1, 1, 1, 1
+            font_size: 16
+            size_hint_y: None
+            height: 44
             on_press: root.eliminar_notas()
         Button:
-            text: "Crear Nota"  # Nuevo botón
+            text: "Crear Nota"
+            background_color: 0.25, 0.32, 0.39, 1
+            color: 1, 1, 1, 1
+            font_size: 16
+            size_hint_y: None
+            height: 44
             on_press: root.crear_nota()
         Button:
             text: "Cerrar Sesión"
+            background_color: 0.18, 0.22, 0.28, 1
+            color: 1, 1, 1, 1
+            font_size: 16
+            size_hint_y: None
+            height: 44
             on_press: root.cerrar_sesion()
+        Button:
+            text: "Eliminar cuenta"
+            background_color: 0.5, 0.1, 0.1, 1
+            color: 1, 1, 1, 1
+            font_size: 16
+            size_hint_y: None
+            height: 44
+            on_press: root.eliminar_cuenta()

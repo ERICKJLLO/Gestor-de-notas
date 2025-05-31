@@ -115,22 +115,12 @@ python -m unittest discover tests
 
 ---
 
-## Diagrama de Clases
-
-![Diagrama UML](assets/DiagramaUML.png)
-
----
-
-## Créditos
-
-Desarrollado por [Tu Nombre o Equipo].  
-Proyecto académico para gestión de notas en Python.
-
----
 
 ## Diagrama de Clases
 
 ![alt text](assets/DiagramaUML.png)
+
+---
 
 ## Pruebas Implementadas
 

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestor de Notas - Iniciar Sesión / Registro</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Gestor de Notas</h2>
+        <div id="login-form">
+            <h3>Iniciar Sesión</h3>
+            <input type="text" id="login-usuario" placeholder="Usuario">
+            <input type="password" id="login-contrasena" placeholder="Contraseña">
+            <button onclick="login()">Entrar</button>
+        </div>
+        <div id="register-form">
+            <h3>Registrar Usuario</h3>
+            <input type="text" id="register-usuario" placeholder="Usuario">
+            <input type="password" id="register-contrasena" placeholder="Contraseña">
+            <button onclick="register()">Registrar</button>
+        </div>
+        <div id="mensaje"></div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

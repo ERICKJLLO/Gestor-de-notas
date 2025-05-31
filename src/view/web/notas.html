@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestor de Notas - Mis Notas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Mis Notas</h2>
+        <button onclick="logout()">Cerrar sesión</button>
+        <button onclick="mostrarFormularioNota()">Nueva Nota</button>
+        <button onclick="mostrarFormularioPassword()">Cambiar Contraseña</button>
+        <button onclick="eliminarUsuario()">Eliminar Usuario</button>
+        <div id="mensaje"></div>
+        <div id="form-nota" style="display:none;">
+            <h3 id="form-nota-titulo">Crear Nota</h3>
+            <input type="text" id="nota-titulo" placeholder="Título">
+            <textarea id="nota-contenido" placeholder="Contenido"></textarea>
+            <input type="text" id="nota-categoria" placeholder="Categoría">
+            <input type="text" id="nota-enlaces" placeholder="Enlaces (separados por coma)">
+            <button onclick="guardarNota()">Guardar</button>
+            <button onclick="cancelarNota()">Cancelar</button>
+        </div>
+        <div id="form-password" style="display:none;">
+            <h3>Cambiar Contraseña</h3>
+            <input type="password" id="nueva-contrasena" placeholder="Nueva contraseña">
+            <button onclick="cambiarPassword()">Cambiar</button>
+            <button onclick="cancelarPassword()">Cancelar</button>
+        </div>
+        <div id="notas-lista"></div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

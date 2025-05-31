@@ -1,29 +1,132 @@
 # Gestor de Notas
 
-El objetivo de este proyecto es desarrollar una aplicación para la gestión de notas personales y
-profesionales. Las funcionalidades que la aplicación debe tener son:
+**Gestor de Notas** es una aplicación completa para la gestión de notas personales y profesionales, desarrollada en Python. Permite a los usuarios crear, editar, eliminar y visualizar notas, así como gestionar su cuenta y contraseña. El sistema soporta tres interfaces de usuario: **interfaz web**, **interfaz gráfica (GUI)** y **consola**.
 
-1. Crear una nota: La aplicación debe permitir a los usuarios crear una nota en el sistema
-2. Editar una nota: La aplicación debe permitir a los usuarios editar una nota existente en
-el sistema
-3. Eliminar una nota: La aplicación debe permitir a los usuarios eliminar una nota
-existente en el sistema
-4. Iniciar sesión: La aplicación debe permitir a los usuarios iniciar sesión en el sistema con
-un usuario ya existente
-5. Crear cuenta: Los usuarios deben poder darse de alta en el sistema
-6. Cambiar contraseña: El sistema debe permitir a los usuarios cambiar sus contraseñas
-cuando ellos lo deseen.
+---
 
-Una nota debe estar compuesta por los siguientes datos:
+## Características principales
 
-1. El título de la nota
-2. El contenido de la nota
-3. Fecha de creación de la nota
-4. Categoría de la nota
-5. Enlaces a otras notas
+- **Registro e inicio de sesión de usuarios**
+- **Gestión de notas**: crear, editar, eliminar, ver
+- **Cambio de contraseña**
+- **Eliminación de usuario**
+- **Cada usuario solo puede ver y gestionar sus propias notas**
+- **Notas con título, contenido, fecha de creación, categoría y enlaces a otras notas**
+- **Persistencia de datos con SQLite y SQLAlchemy**
+- **Tres interfaces disponibles**:
+  - **Web** (FastAPI + HTML/CSS/JS)
+  - **Gráfica (GUI)** (Kivy)
+  - **Consola** (CLI)
 
-**Nota**:Cada usuario al crear su cuenta e iniciar sesión debe poder ver sus notas y solo sus notas, no
-las notas creadas por los otros usuarios.
+---
+
+## Estructura del proyecto
+
+```
+Gestor-de-notas/
+│
+├── app_web.py           # Servidor FastAPI para la interfaz web
+├── app_gui.py           # Lanzador de la interfaz gráfica (Kivy)
+├── app_console.py       # Lanzador de la interfaz de consola
+├── requirements.txt     # Dependencias del proyecto
+├── README.md
+│
+├── src/
+│   ├── model/           # Lógica de negocio y modelos de datos
+│   ├── controller/      # Controladores para la API web
+│   └── view/
+│       ├── web/         # Archivos HTML, CSS y JS de la interfaz web
+│       └── gui/         # Archivos de la interfaz gráfica (Kivy)
+│
+├── tests/               # Pruebas unitarias
+└── scripts/             # Scripts auxiliares y ejemplos
+```
+
+---
+
+## Tecnologías utilizadas
+
+- **Python 3**
+- **FastAPI** y **Uvicorn** (backend web/API)
+- **HTML, CSS, JavaScript** (frontend web)
+- **Kivy** (interfaz gráfica de escritorio)
+- **SQLAlchemy** (ORM para persistencia en SQLite)
+- **pytest / unittest** (pruebas)
+- **Consola estándar** (CLI)
+
+---
+
+## Modos de uso
+
+### 1. Interfaz Web
+
+- **Requisitos:** Tener instaladas las dependencias (`pip install -r requirements.txt`)
+- **Ejecución:**
+  ```
+  python app_web.py
+  ```
+- **Acceso:** Abre tu navegador en [http://127.0.0.1:8000](http://127.0.0.1:8000)
+- **Archivos web:** `src/view/web/` (HTML, CSS, JS)
+
+### 2. Interfaz Gráfica (GUI)
+
+- **Requisitos:** Tener Kivy instalado (`pip install kivy`)
+- **Ejecución:**
+  ```
+  python app_gui.py
+  ```
+- **Descripción:** Aplicación de escritorio con ventanas y botones para todas las funcionalidades.
+
+### 3. Interfaz de Consola
+
+- **Ejecución:**
+  ```
+  python app_console.py
+  ```
+- **Descripción:** Menú interactivo por consola para gestionar usuarios y notas.
+
+---
+
+## Funcionalidades detalladas
+
+- **Crear nota:** Permite crear una nota con título, contenido, categoría y enlaces.
+- **Editar nota:** Modifica los datos de una nota existente.
+- **Eliminar nota:** Borra una nota seleccionada.
+- **Ver notas:** Muestra todas las notas del usuario actual.
+- **Registrar usuario:** Permite crear una nueva cuenta.
+- **Iniciar sesión:** Acceso seguro para usuarios registrados.
+- **Cambiar contraseña:** Permite modificar la contraseña del usuario.
+- **Eliminar usuario:** Borra la cuenta y todas las notas asociadas.
+
+---
+
+## Pruebas
+
+El proyecto incluye pruebas unitarias para todas las funcionalidades principales.  
+Para ejecutarlas:
+
+```
+pytest
+```
+o
+```
+python -m unittest discover tests
+```
+
+---
+
+## Diagrama de Clases
+
+![Diagrama UML](assets/DiagramaUML.png)
+
+---
+
+## Créditos
+
+Desarrollado por [Tu Nombre o Equipo].  
+Proyecto académico para gestión de notas en Python.
+
+---
 
 ## Diagrama de Clases
 

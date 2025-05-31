@@ -1,3 +1,8 @@
+"""
+Módulo controlador web para la API REST del Gestor de Notas.
+Define las rutas para registro, login, CRUD de notas, cambio de contraseña y eliminación de usuario.
+"""
+
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from src.model.gestor_notas import GestorNotas
@@ -77,5 +82,11 @@ async def eliminar_usuario(data: dict):
         return JSONResponse(status_code=400, content={"error": str(e)})
 
 class WebControlador:
+    """
+    Clase que encapsula el router de FastAPI para la gestión web del sistema de notas.
+    """
     def __init__(self):
+        """
+        Inicializa el WebControlador y expone el router con todas las rutas de la API.
+        """
         self.router = router
